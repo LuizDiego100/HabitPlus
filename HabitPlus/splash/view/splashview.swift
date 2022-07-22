@@ -27,41 +27,10 @@ struct splashview: View {
                 loadingView(error: msg)
             }
         }.onAppear(perform: viewModel.onAppear)
-        }
     }
     
-
-// 1 compartilhamento | objetos
-struct LoadingView: View {
-    var body: some View {
-        ZStack{
-            Image("logoHabit")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(20)
-                .background(Color.white)
-                .ignoresSafeArea()
-        }
-    }
 }
 
-// 2. variavies em extensions
-extension splashview {
-    var loading: some View{
-        ZStack{
-            Image("logoHabit")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(20)
-                .background(Color.white)
-                .ignoresSafeArea()
-        }
-    }
-}
-
-// 3. funções em extensions
 extension splashview {
     func loadingView(error: String? = nil) -> some View {
     ZStack{
@@ -70,7 +39,6 @@ extension splashview {
             .scaledToFit()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(20)
-            .background(Color.white)
             .ignoresSafeArea()
         
         if let error = error {
@@ -87,9 +55,12 @@ extension splashview {
 
 struct splashview_Previews: PreviewProvider {
     static var previews: some View {
-        let viewModel = SplashViewModel()
-        splashview(viewModel: viewModel)
-        //splashview(state: .loading)
+        ForEach(ColorScheme.allCases, id: \.self) {
+          let viewModel = SignInViewModel()
+          SignInView(viewModel: viewModel)
+            .previewDevice("iPhone 13")
+            .preferredColorScheme($0)
+        }
     }
 }
 

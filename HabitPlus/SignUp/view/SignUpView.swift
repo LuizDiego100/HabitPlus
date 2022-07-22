@@ -9,22 +9,6 @@ import SwiftUI
 
 struct SignUpView: View {
     
-    //nome completo
-    //email
-    //senha
-    //nif
-    //telefone
-    //data de nascimento
-    //genero
-    
-    @State var fullName = ""
-    @State var email = ""
-    @State var password = ""
-    @State var document = ""
-    @State var phone = ""
-    @State var birthday = ""
-    @State var gender = Gender.male
-    
     @ObservedObject var viewModel: SignUpViewModel
     
     var body: some View {
@@ -77,42 +61,42 @@ struct SignUpView: View {
 
 extension SignUpView {
     var fullNameField: some View {
-        EditTextView(text: $fullName,
+        EditTextView(text: $viewModel.fullName,
                      placeholder: "Entre com seu nome completo *",
                      keyboard: .alphabet,
                      
-                     failure: fullName.count < 3)
+                     failure: viewModel.fullName.count < 3)
     }
 }
 
 extension SignUpView {
     var emailField: some View {
-        EditTextView(text: $email,
+        EditTextView(text: $viewModel.email,
                      placeholder: "Entre com seu e-mail *",
                      keyboard: .emailAddress,
                      error: "e-mail inválido",
-                     failure: !email.isEmail())
+                     failure: !viewModel.email.isEmail())
     }
 }
 
 extension SignUpView {
     var passwordField: some View {
-        EditTextView(text: $password,
+        EditTextView(text: $viewModel.password,
                      placeholder: "Entre com sua senha *",
                      keyboard: .default,
                      error: "senha deve ter ao menos 8 caracteres",
-                     failure: password.count < 8,
+                     failure: viewModel.password.count < 8,
                      isSecure: true)
     }
 }
 
 extension SignUpView {
     var documentField: some View {
-        EditTextView(text: $document,
+        EditTextView(text: $viewModel.document,
                      placeholder: "Entre com seu Nif *",
                      keyboard: .numberPad,
                      error: "Nif inválido",
-                     failure: document.count < 8)
+                     failure: viewModel.document.count != 9)
         // TODO: mask
         // TODO: isDisabled
     }
@@ -120,29 +104,29 @@ extension SignUpView {
 
 extension SignUpView {
     var phoneField: some View {
-        EditTextView(text: $document,
+        EditTextView(text: $viewModel.phone,
                      placeholder: "Entre com seu telemóvel *",
                      keyboard: .numberPad,
-                     error: "Deve conter ao menos 8 dígitos",
-                     failure: phone.count < 8)
+                     error: "Deve conter ao menos 9 dígitos",
+                     failure: viewModel.phone.count < 9 || viewModel.phone.count >= 14)
         // TODO: mask
     }
 }
 
 extension SignUpView {
     var birthdayField: some View {
-        EditTextView(text: $birthday,
+        EditTextView(text: $viewModel.birthday,
                      placeholder: "Entre com sua data de nascimento",
                      keyboard: .default,
                      error: "Data deve ser dd/MM/yyyy",
-                     failure: birthday.count != 10)
+                     failure: viewModel.birthday.count != 10)
         // TODO: mask
     }
 }
 
 extension SignUpView {
     var genderField: some View {
-        Picker("Gender", selection: $gender) {
+        Picker("Gender", selection: $viewModel.gender) {
             ForEach(Gender.allCases, id: \.self) { value in
                 Text(value.rawValue)
                     .tag(value)
@@ -160,12 +144,12 @@ extension SignUpView {
         },
         text: "Realize seu Cadastro",
         showProgress: self.viewModel.uiState == SignUPUIState.loading,
-        disable: !email.isEmail() ||
-            password.count < 8 ||
-            fullName.count < 3 ||
-            document.count < 8 ||
-            phone.count < 8  ||
-            birthday.count != 10)
+                          disable: !viewModel.email.isEmail() ||
+                          viewModel.password.count < 8 ||
+                          viewModel.fullName.count < 3 ||
+                          viewModel.document.count != 9 ||
+                          viewModel.phone.count < 9  || viewModel.phone.count >= 14 ||
+                          viewModel.birthday.count != 10)
     }
 }
 
