@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import FirebaseCore
+import FirebaseAuth
+import Firebase
 
 @main
 struct HabitPlusApp: App {
