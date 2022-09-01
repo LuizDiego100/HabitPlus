@@ -34,7 +34,7 @@ struct SignInView: View {
                   .scaledToFit()
                   .padding(.horizontal, 48)
                 
-                Text("Login")
+                  Text("Login")
                   .foregroundColor(.orange)
                   .font(Font.system(.title).bold())
                   .padding(.bottom, 8)
@@ -140,7 +140,7 @@ extension SignInView {
 struct SignInView_Previews: PreviewProvider {
   static var previews: some View {
     ForEach(ColorScheme.allCases, id: \.self) {
-      let viewModel = SignInViewModel()
+      let viewModel = SignInViewModel(interactor: SignInInteractor())
       SignInView(viewModel: viewModel)
         .previewDevice("iPhone 13")
         .preferredColorScheme($0)

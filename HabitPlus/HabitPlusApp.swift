@@ -6,15 +6,12 @@
 //
 
 import SwiftUI
-import FirebaseCore
-import FirebaseAuth
-import Firebase
 
 @main
 struct HabitPlusApp: App {
     var body: some Scene {
         WindowGroup {
-            splashview(viewModel: SplashViewModel())
+            splashview(viewModel: SplashViewModel(interactor: SplashInteractor()))
         }
     }
 }

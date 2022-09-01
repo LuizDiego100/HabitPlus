@@ -20,7 +20,20 @@ class SignUpViewModel: ObservableObject {
     
     var publisher: PassthroughSubject<Bool, Never>!
     
+    private var cancellableSignUp: AnyCancellable?
+    private var cancellableSignIn: AnyCancellable?
+    
     @Published var uiState: SignUPUIState = .none
+    
+    private let interactor: SignUpInteractor
+    
+    init(interactor: SignUpInteractor) {
+        self.interactor = interactor
+    }
+    
+    deinit {
+        cancellableSignUp?.cancel()
+    }
     
     func signUp() {
         self.uiState = .loading
@@ -43,46 +56,52 @@ class SignUpViewModel: ObservableObject {
         let birthday = formatter.string(from: dateFormatted)
         
         // Main Thread
-        WebService.postUser(request: SignUpRequest(fullName: fullName,
-                                                   email: email,
-                                                   password: password,
-                                                   document: document,
-                                                   phone: phone,
-                                                   birthday: birthday,
-                                                   gender: gender.index)) { (successResponse, errorResponse) in
-          // Non Main Thread
-          if let error = errorResponse {
-            DispatchQueue.main.async {
-              // Main Thread
-              self.uiState = .error(error.detail)
-            }
-          }
-          
-          if let success = successResponse {
-            WebService.login(request: SignInRequest(email: self.email,
-                                                    password: self.password)) { (successResponse, errorResponse) in
-              
-              if let errorSignIn = errorResponse {
-                DispatchQueue.main.async {
-                  // Main Thread
-                  self.uiState = .error(errorSignIn.detail.message)
-                }
-              }
-              
-              if let successSignIn = successResponse {
-                DispatchQueue.main.async {
-                  print(successSignIn)
-                  self.publisher.send(success)
-                  self.uiState = .success
-                }
-              }
-              
-            }
-            
-          }
-          
-        }
+        let SignUpRequest = SignUpRequest(fullName: fullName,
+                                          email: email,
+                                          password: password,
+                                          document: document,
+                                          phone: phone,
+                                          birthday: birthday,
+                                          gender: gender.index)
         
+        cancellableSignUp = interactor.postUser(SignUpRequest: SignUpRequest)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch(completion) {
+                case .failure(let appError):
+                    self.uiState = .error(appError.message)
+                    break
+                case .finished:
+                    break
+                }
+            } receiveValue: { created in
+                if (created) {
+                    
+                    self.cancellableSignIn = self.interactor.login(SignInRequest: SignInRequest(email: self.email, password: self.password))
+                        .receive(on: DispatchQueue.main)
+                        .sink { completion in
+                            switch(completion) {
+                            case .failure(let appError):
+                                self.uiState = .error(appError.message)
+                                break
+                            case .finished:
+                                break
+                            }
+                        } receiveValue: { success in
+                            print(created)
+                            
+                            let auth = UserAuth(idToken: success.accessToken,
+                                                refreshToken: success.refreshToken,
+                                                expires: Date().timeIntervalSince1970 + Double(success.expires),
+                                                tokenType: success.tokenType)
+                            
+                            self.interactor.insertAuth(userAuth: auth)
+                            
+                            self.publisher.send(created)
+                            self.uiState = .success
+                        }
+                }
+            }
       }
       
     }
