@@ -14,7 +14,11 @@ enum Gender: String, CaseIterable, Identifiable {
     case indefinido = "Indefinido"
     
     var id: String {
-        self.rawValue
+      self.rawValue
     }
-
-}
+    
+    var index: Self.AllCases.Index {
+      return Self.allCases.firstIndex { self == $0 } ?? 0
+    }
+    
+  }
